@@ -15,7 +15,5 @@ func NewErrorHandler(logger logger.Logger) *ErrorHandler {
 }
 
 func (eh ErrorHandler) HandleError(err error) {
-	if err != nil {
 		eh.logger.Fatalln(err)
-	}
 }

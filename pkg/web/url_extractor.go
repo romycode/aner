@@ -8,17 +8,14 @@ import (
 
 	"github.com/chromedp/chromedp"
 	"github.com/gocolly/colly/v2"
-	"github.com/romycode/anime-downloader/pkg/errors"
 )
 
 type URLExtractor struct {
-	eh *errors.ErrorHandler
-	c  *colly.Collector
+	c *colly.Collector
 }
 
-func NewURLExtractor(eh *errors.ErrorHandler) *URLExtractor {
+func NewURLExtractor() *URLExtractor {
 	return &URLExtractor{
-		eh: eh,
 		c: colly.NewCollector(
 			colly.Async(true),
 		),
@@ -35,7 +32,7 @@ func (u URLExtractor) GetFromStaticWebsiteAttributeValueFromAllElementsByQuery(t
 
 	err := u.c.Visit(targetURL)
 	if err != nil {
-		u.eh.HandleError(err)
+		log.Fatalln(err)
 	}
 
 	u.c.Wait()
@@ -53,7 +50,7 @@ func (u URLExtractor) GetFromStaticWebsiteAttributeValueFromElementByQuery(targe
 
 	err := u.c.Visit(targetURL)
 	if err != nil {
-		u.eh.HandleError(err)
+		log.Fatalln(err)
 	}
 
 	u.c.Wait()

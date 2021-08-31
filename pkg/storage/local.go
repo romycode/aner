@@ -2,28 +2,26 @@ package storage
 
 import (
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strings"
-
-	"github.com/romycode/anime-downloader/pkg/errors"
 )
 
 type LocalStorage struct {
 	path string
-	eh   *errors.ErrorHandler
 }
 
 // NewLocalStorage creates a new instance of LocalStorage (uses local filesystem)
-func NewLocalStorage(path string, eh *errors.ErrorHandler) Storage {
-	return &LocalStorage{path: path, eh: eh}
+func NewLocalStorage(path string) Storage {
+	return &LocalStorage{path: path}
 }
 
 // Initialize creates a path that was provided in constructor storage.NewLocalStorage()
 func (l LocalStorage) Initialize() {
 	err := os.MkdirAll(l.path, 0755)
 	if err != nil {
-		l.eh.HandleError(err)
+		log.Fatalln(err)
 	}
 }
 
@@ -37,7 +35,7 @@ func (l LocalStorage) CreateFileFromURL(name string, url string) error {
 	defer func(out *os.File) {
 		err := out.Close()
 		if err != nil {
-			l.eh.HandleError(err)
+			log.Fatalln(err)
 		}
 	}(out)
 

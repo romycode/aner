@@ -14,28 +14,43 @@ import (
 
 var err error
 var wd string
-var urlExtractor *web.URLExtractor
+var urlExtractor *web.Crawler
 var localStorage storage.Storage
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Llongfile)
+
 	wd, _ = os.Getwd()
-
-	urlExtractor, localStorage = bootstrap.WarmUp(wd + "/Anime/" + os.Args[2])
-	localStorage.Initialize()
-
 	animeURL, err := url.Parse(os.Args[1])
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	episodes := urlExtractor.GetFromStaticWebsiteAttributeValueFromAllElementsByQuery(animeURL.String(), "li.fa-play-circle > a", "href", animeURL.Scheme+"://"+animeURL.Host)
+	siteURL, err := url.Parse(fmt.Sprintf("%s://%s", animeURL.Scheme, animeURL.Host))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	urlExtractor, localStorage = bootstrap.WarmUp(fmt.Sprintf("%s/Anime/%s", wd, os.Args[2]))
+	localStorage.Initialize()
+
+	episodes, err := urlExtractor.GetAllElementAttributeByQuery(animeURL.String(), "li.fa-play-circle > a", "href", siteURL.String(), false)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	downloadEpisodes(episodes)
 }
 
 func downloadEpisodes(episodes []string) {
 	var preDownloadURLs []string
 	for _, episode := range episodes {
-		preDownloadURLs = append(preDownloadURLs, urlExtractor.GetFromStaticWebsiteAttributeValueFromAllElementsByQuery(episode, "a.BtnNw-a", "href", "https:")...)
+		toAdd, err := urlExtractor.GetElementAttributeByQuery(episode, "a.BtnNw-a", "href", "https:", false)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		preDownloadURLs = append(preDownloadURLs, toAdd)
 	}
 
 	var wg sync.WaitGroup
@@ -44,7 +59,19 @@ func downloadEpisodes(episodes []string) {
 
 		go func(url string) {
 			defer wg.Done()
-			name, downloadURL := urlExtractor.GetFromDynamicWebsiteAttributeValueFromElementByQuery(url, "#content-download > div:nth-child(1) > div:nth-child(3) > a", "href")
+
+			name, err := urlExtractor.GetElementTextByQuery(url, "#title", false)
+			if err != nil {
+				log.Fatalln(err)
+			}
+
+			downloadURL, err := urlExtractor.GetElementAttributeByQuery(url, "#content-download > div:nth-child(1) > div:nth-child(3) > a", "href", "", true)
+			if err != nil {
+				log.Fatalln(err)
+			}
+
+
+
 			fmt.Printf("Downloading episode %s on url %s \n", name, downloadURL)
 			err = localStorage.CreateFileFromURL(name, downloadURL)
 			if err != nil {

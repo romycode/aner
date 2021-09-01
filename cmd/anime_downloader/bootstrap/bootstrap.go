@@ -5,8 +5,8 @@ import (
 	"github.com/romycode/anime-downloader/pkg/web"
 )
 
-func WarmUp(path string) (*web.URLExtractor, storage.Storage) {
-	var e = web.NewURLExtractor()
+func WarmUp(path string) (*web.Crawler, storage.Storage) {
+	var e = web.NewCrawler()
 
 	localStorage := storage.NewLocalStorage(path)
 

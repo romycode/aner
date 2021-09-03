@@ -59,7 +59,7 @@ func (a AnimeFlv3Downloader) DownloadEpisodes(episodes []string) {
 	for name, preDownloadURL := range preDownloadURLs {
 		wg.Add(1)
 
-		go func(url string) {
+		go func(name, url string) {
 			defer wg.Done()
 
 			iframeWithURL, err := a.c.GetElementTextByQuery(url, "#content > div > div:nth-child(6) > div > textarea", false)
@@ -76,7 +76,7 @@ func (a AnimeFlv3Downloader) DownloadEpisodes(episodes []string) {
 			if name != "" {
 				_ = a.s.CreateFileFromURL(name, downloadURL)
 			}
-		}(preDownloadURL)
+		}(name, preDownloadURL)
 	}
 
 	wg.Wait()

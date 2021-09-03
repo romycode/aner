@@ -6,9 +6,8 @@ import (
 )
 
 func WarmUp(path string) (*web.Crawler, storage.Storage) {
-	var e = web.NewCrawler()
+	c := web.NewCrawler()
+	s := storage.NewLocalStorage(path)
 
-	localStorage := storage.NewLocalStorage(path)
-
-	return e, localStorage
+	return c, s
 }
